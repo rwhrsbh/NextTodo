@@ -5,7 +5,7 @@ export async function getUserIP(): Promise<string> {
     try {
         const response = await fetch('/api/ip');
         const data = await response.json();
-        return data.ip;
+        return data.ip || 'unknown';
     } catch (error) {
         console.error('Failed to get IP:', error);
         return 'unknown';
@@ -13,11 +13,17 @@ export async function getUserIP(): Promise<string> {
 }
 
 export async function fetchTodos(userIdentifier: string): Promise<Todo[]> {
-    const response = await fetch(`/api/todos?identifier=${userIdentifier}`);
-    if (!response.ok) {
-        throw new Error('Failed to fetch todos');
+    try {
+        const response = await fetch(`/api/todos?identifier=${userIdentifier}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch todos');
+        }
+        const data = await response.json();
+        return Array.isArray(data) ? data : [];
+    } catch (error) {
+        console.error('Error fetching todos:', error);
+        return [];
     }
-    return response.json();
 }
 
 export async function saveTodos(userIdentifier: string, todos: Todo[]): Promise<void> {
@@ -26,7 +32,10 @@ export async function saveTodos(userIdentifier: string, todos: Todo[]): Promise<
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ identifier: userIdentifier, todos }),
+        body: JSON.stringify({ 
+            identifier: userIdentifier, 
+            todos: Array.isArray(todos) ? todos : [] 
+        }),
     });
 
     if (!response.ok) {
