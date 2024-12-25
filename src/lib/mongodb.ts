@@ -1,44 +1,31 @@
 // src/lib/mongodb.ts
-import { MongoClient, MongoClientOptions } from 'mongodb';
+import { MongoClient } from 'mongodb';
 
-// Получаем URI из переменных окружения с правильным именем
-const MONGODB_URI = process.env.MONGODB_URI;
-
-if (!MONGODB_URI) {
-    throw new Error(
-        'Please define the MONGODB_URI environment variable in Vercel project settings'
-    );
+if (!process.env.MONGODB_URI) {
+ throw new Error('Please add your Mongo URI to .env.local');
 }
 
-// Настройки подключения к MongoDB с оптимальными параметрами
-const options: MongoClientOptions = {
-    maxPoolSize: 10,
-    minPoolSize: 5,
-    maxIdleTimeMS: 60000,
-    connectTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
-};
+const uri = process.env.MONGODB_URI;
+const options = {};
 
-// Объявляем тип для глобального кэша клиента MongoDB
+// Определяем тип для глобального объекта
 declare global {
-    let _mongoClientPromise: Promise<MongoClient> | undefined;
-    
+ // eslint-disable-next-line no-var
+ var _mongoClientPromise: Promise<MongoClient> | undefined;
 }
 
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
 if (process.env.NODE_ENV === 'development') {
-    // В режиме разработки переиспользуем соединение
-    if (!global._mongoClientPromise) {
-        client = new MongoClient(MONGODB_URI, options);
-        global._mongoClientPromise = client.connect();
-    }
-    clientPromise = global._mongoClientPromise;
+ if (!global._mongoClientPromise) {
+   client = new MongoClient(uri, options);
+   global._mongoClientPromise = client.connect();
+ }
+ clientPromise = global._mongoClientPromise;
 } else {
-    // В продакшене создаем новое соединение
-    client = new MongoClient(MONGODB_URI, options);
-    clientPromise = client.connect();
+ client = new MongoClient(uri, options);
+ clientPromise = client.connect();
 }
 
 export default clientPromise;
