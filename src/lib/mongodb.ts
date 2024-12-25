@@ -22,6 +22,7 @@ const options: MongoClientOptions = {
 // Объявляем тип для глобального кэша клиента MongoDB
 declare global {
     let _mongoClientPromise: Promise<MongoClient> | undefined;
+    
 }
 
 let client: MongoClient;
