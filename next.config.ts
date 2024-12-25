@@ -9,6 +9,7 @@ const nextConfig = {
             }
         }
         return config;
+        
     },
     // Передаем переменные окружения в приложение
     env: {
